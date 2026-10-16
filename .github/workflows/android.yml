@@ -1,0 +1,28 @@
+name: Build Na Ladoni APK
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - name: Extract project
+        run: unzip -o NaLadoni_Fresh_Start.zip -d extracted
+      - name: Build APK
+        run: |
+          GRADLEW=$(find extracted -type f -name gradlew | head -n 1)
+          if [ -z "$GRADLEW" ]; then echo "gradlew not found"; exit 1; fi
+          PROJECT_DIR=$(dirname "$GRADLEW")
+          chmod +x "$GRADLEW"
+          cd "$PROJECT_DIR"
+          ./gradlew assembleDebug
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Na-Ladoni-APK
+          path: extracted/**/*.apk
